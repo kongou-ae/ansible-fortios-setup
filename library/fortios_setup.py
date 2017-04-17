@@ -59,16 +59,42 @@ def main():
 
 
     # get info
-
     facts = dict()
-    #facts['all_ipv4_addresses'] = list()
+
+    facts['all_ipv4_addresses'] = list()
+
+    interfaces = f.execute_command('get system interface')
+    for interface in interfaces:
+        if re.search('name:',interface):
+            if re.search('0.0.0.0 0.0.0.0',interface) == None:
+                ipv4_address = re.match('.*ip:\s([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})',interface).group(1)
+                facts['all_ipv4_addresses'].append(ipv4_address)
+    
     #facts['all_ipv6_addresses'] = list()
     #facts['apparmor'] = dict()
     #facts['architecture'] = ''
     #facts['bios_date'] =''
     #facts['bios_version'] = ''
     #facts['date_time'] = dict()
-    #facts['default_ipv4'] = dict()
+
+    # get interface of default route
+    defaultInterface = re.match('.*,\s+(.*)$',f.execute_command('get router info routing-table all | grep 0.0.0.0')[0].lstrip()).group(1)
+
+    # convert ppp1 to pppoe    
+    if re.match('ppp',defaultInterface):
+        defaultInterface = 'pppoe'
+    
+    # get interface's info which is used on default route 
+    interfaces = f.execute_command('get system interface | grep ' + defaultInterface)
+
+    for interface in interfaces:
+        if re.search('status: up',interface) and re.search(defaultInterface,interface):
+            default_ipv4_address = re.match('.*ip:\s([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})',interface).group(1)
+    
+    facts['default_ipv4'] = dict()
+    facts['default_ipv4'].update({'address':default_ipv4_address})
+    facts['default_ipv4'].update({'interface':defaultInterface})
+
     #facts['default_ipv6'] = dict()
     
     # Version: Fortigate-50B v4.0,build0665,130514 (MR3 Patch 14)
