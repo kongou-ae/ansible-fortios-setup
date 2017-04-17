@@ -25,6 +25,14 @@ ok: [xxx.xxx.xxx.xxx] => {
     "changed": false,
     "gather": {
         "ansible_facts": {
+            "ansible_all_ipv4_addresses": [
+                "192.168.111.254",
+                "36.2.xxx.xxx"
+            ],
+            "ansible_default_ipv4": {
+                "address": "36.2.xxx.xxx",
+                "interface": "ppp"
+            },
             "ansible_distribution": "FortiOS",
             "ansible_distribution_major_version": "v4.0",
             "ansible_distribution_version": "v4.0 MR3 Patch 14",
